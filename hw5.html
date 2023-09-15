@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homework 5 Fullstack Web Development</title>
+    <!-- Tambahkan link ke library Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* CSS untuk mengubah warna latar belakang */
+        body {
+            background-color: #baeae8; /* Ganti dengan warna yang Anda inginkan */
+        }
+
+        /* CSS untuk mengatur garis tabel */
+        table {
+        border-collapse: collapse;
+        width: 100%;
+        }
+
+        table, th, td {
+        border: 1px solid #020202;
+        }
+
+        th, td {
+        padding: 8px;
+        text-align: center;
+        }
+
+        th {
+        background-color: #f2f2f2; /* Warna latar belakang header tabel */
+        }
+
+        footer {
+            text-align: center;
+            padding: 5px;
+            background-color: #0f5b69;
+            color: #f4edede1;
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <!-- Tab Navigation -->
+        <ul class="nav nav-tabs" id="myTabs">
+            <li class="nav-item">
+                <a class="nav-link active" id="registrasi-tab" data-toggle="tab" href="#registrasi">Registrasi</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="list-pendaftar-tab" data-toggle="tab" href="#list-pendaftar">List Pendaftar</a>
+            </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content">
+            <!-- Tab Registrasi -->
+            <div class="tab-pane fade show active" id="registrasi">
+                <form id="registrationForm">
+                    <div class="form-group">
+                        <label for="nama">Nama</label>
+                        <input type="text" class="form-control" id="nama" placeholder="Nama" required minlength="10">
+                    </div>
+                    <div class="form-group">
+                        <label for="umur">Umur</label>
+                        <input type="number" class="form-control" id="umur" placeholder="Umur" required min="25">
+                    </div>
+                    <div class="form-group">
+                        <label for="uang-sangu">Uang Sangu</label>
+                        <input type="number" class="form-control" id="uang-sangu" placeholder="Uang Sangu" required min="100000" max="1000000">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+
+            <!-- Tab List Pendaftar -->
+            <div class="tab-pane fade" id="list-pendaftar">
+                <h3>Resume Pendaftar</h3>
+                <p id="resume-text">Rata rata pendaftar memiliki uang sangu sebesar 0 dengan rata-rata umur 0</p>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Nama</th>
+                            <th>Umur</th>
+                            <th>Uang Sangu</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pendaftar-list">
+                        <!-- Daftar pendaftar akan muncul di sini -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tambahkan link ke library Bootstrap JS, jQuery, dan Popper.js -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        class Pendaftar {
+            constructor() {
+                this.pendaftar = [];
+            }
+
+            async tambahPendaftar(nama, umur, uangSangu) {
+                // Validasi input
+                if (nama.length < 10 || umur < 25 || uangSangu < 100000 || uangSangu > 1000000) {
+                    throw new Error('Input tidak valid, periksa kembali sesuai kriteria.');
+                }
+
+                // Menambahkan pendaftar ke array
+                this.pendaftar.push({ nama, umur, uangSangu });
+            }
+
+            hitungRataRata() {
+                const totalUmur = this.pendaftar.reduce((sum, pendaftar) => sum + pendaftar.umur, 0);
+                const totalUangSangu = this.pendaftar.reduce((sum, pendaftar) => sum + pendaftar.uangSangu, 0);
+                const rataRataUmur = totalUmur / this.pendaftar.length;
+                const rataRataUangSangu = totalUangSangu / this.pendaftar.length;
+                return { rataRataUmur, rataRataUangSangu };
+            }
+        }
+
+        // Mengambil elemen-elemen form
+        const registrationForm = document.getElementById('registrationForm');
+        const namaInput = document.getElementById('nama');
+        const umurInput = document.getElementById('umur');
+        const uangSanguInput = document.getElementById('uang-sangu');
+        const pendaftarList = document.getElementById('pendaftar-list');
+        const resumeText = document.getElementById('resume-text');
+
+        const pendaftar = new Pendaftar();
+
+        // Meng-handle submit form
+        registrationForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const nama = namaInput.value;
+            const umur = parseInt(umurInput.value);
+            const uangSangu = parseInt(uangSanguInput.value);
+
+            try {
+                await pendaftar.tambahPendaftar(nama, umur, uangSangu);
+
+                // Menghitung rata-rata umur dan uang sangu
+                const { rataRataUmur, rataRataUangSangu } = pendaftar.hitungRataRata();
+
+                // Memperbarui teks resume
+                resumeText.textContent = `Rata rata pendaftar memiliki uang sangu sebesar ${rataRataUangSangu.toFixed(2)} dengan rata rata umur ${rataRataUmur.toFixed(2)}`;
+
+                // Memperbarui tabel list pendaftar
+                updatePendaftarList();
+
+                // Mereset form
+                registrationForm.reset();
+            } catch (error) {
+                alert(error.message);
+            }
+        });
+
+        // Fungsi untuk memperbarui tabel list pendaftar
+        function updatePendaftarList() {
+            pendaftarList.innerHTML = '';
+            pendaftar.pendaftar.forEach((pendaftar) => {
+                const row = `<tr>
+                    <td>${pendaftar.nama}</td>
+                    <td>${pendaftar.umur}</td>
+                    <td>${pendaftar.uangSangu}</td>
+                </tr>`;
+                pendaftarList.innerHTML += row;
+            });
+        }
+    </script>
+     <!-- Footer -->
+     <footer>
+        Create by : Ahmad Irfan Musyaffa
+    </footer>
+
+    <!-- Tambahkan link ke library Bootstrap JS, jQuery, dan Popper.js -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
